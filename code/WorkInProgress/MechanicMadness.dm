@@ -1070,7 +1070,7 @@ var/list/mechanics_telepads = new/list()
 			return
 
 		var/inp = input(usr,"Please enter Expression Pattern:","Expression setting", expressionpatt) as text
-		if(length(inp))
+		if(inp != null)
 			//var/regex/R = new(inp) // How would you even check this anymore?
 			//if(!R)
 			//	boutput(usr, "<span style=\"color:red\">Bad regex</span>")
@@ -1096,7 +1096,7 @@ var/list/mechanics_telepads = new/list()
 			return
 
 		var/inp = input(usr,"Please enter Expression Replacement:","Expression setting", expressionrepl) as text
-		if(length(inp))
+		if(inp != null)
 			inp = sanitize(html_encode(inp))
 			expressionrepl = inp
 			expression = ("[expressionpatt]/[expressionrepl]/[expressionflag]")
@@ -1118,7 +1118,7 @@ var/list/mechanics_telepads = new/list()
 			return
 
 		var/inp = input(usr,"Please enter Expression Flags:","Expression setting", expressionflag) as text
-		if(length(inp))
+		if(inp != null)
 			inp = sanitize(html_encode(inp))
 			expressionflag = inp
 			expression = ("[expressionpatt]/[expressionrepl]/[expressionflag]")

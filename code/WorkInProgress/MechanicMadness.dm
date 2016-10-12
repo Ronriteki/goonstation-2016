@@ -1026,7 +1026,11 @@ var/list/mechanics_telepads = new/list()
 	name = "RegEx Replace Component"
 	desc = ""
 	icon_state = "comp_regrep"
-	var/expression = "/original/replacement/g"
+	var/expression = "original/replacement/g"
+	var/expressionpatt = "original"
+	var/expressionrepl = "replacement"
+	var/expressionflag = "g"
+	
 
 	get_desc()
 		. += "<br><span style=\"color:blue\">Current Expression: [sanitize(html_encode(expression))]</span>"
@@ -1037,12 +1041,12 @@ var/list/mechanics_telepads = new/list()
 		return
 
 	proc/checkstr(var/datum/mechanicsMessage/input)
-		if(level == 2 || !length(expression)) return
-		var/regex/R = new(expression)
+		if(level == 2 || !length(expressionpatt)) return
+		var/regex/R = new(expressionpatt,expressionflag)
 
 		if(!R) return
 
-		var/mod = R.Replace(input.signal)
+		var/mod = R.Replace(input.signal,expressionrepl)
 		mod = strip_html(sanitize(html_encode(mod)))
 
 		if(mod)
@@ -1051,10 +1055,10 @@ var/list/mechanics_telepads = new/list()
 
 		return
 
-	verb/setregexr()
+	verb/setregexr1()
 		set src in view(1)
-		set name = "\[Set Regular Expression\]"
-		set desc = "Sets the expression for searching and replacing"
+		set name = "\[Set Pattern\]"
+		set desc = "Sets the expression pattern for searching and replacing"
 		set category = "Local"
 
 		if (!istype(usr, /mob/living))
@@ -1065,16 +1069,62 @@ var/list/mechanics_telepads = new/list()
 			boutput(usr, "<span style=\"color:red\">[MECHFAILSTRING]</span>")
 			return
 
-		var/inp = input(usr,"Please enter Expression:","Expression setting", expression) as text
+		var/inp = input(usr,"Please enter Expression Pattern:","Expression setting", expressionpatt) as text
 		if(length(inp))
-			var/regex/R = new(inp)
-			if(!R)
-				boutput(usr, "<span style=\"color:red\">Bad regex</span>")
-			else
-				inp = sanitize(html_encode(inp))
-				expression = inp
-				boutput(usr, "Expression set to [inp]")
+			//var/regex/R = new(inp) // How would you even check this anymore?
+			//if(!R)
+			//	boutput(usr, "<span style=\"color:red\">Bad regex</span>")
+			//else
+			inp = sanitize(html_encode(inp))
+			expressionpatt = inp
+			expression = ("[expressionpatt]/[expressionrepl]/[expressionflag]")
+			boutput(usr, "Expression Pattern set to [inp], Current Expression: [sanitize(html_encode(expression))]")
 		return
+		
+	verb/setregexr2()
+		set src in view(1)
+		set name = "\[Set Replacement\]"
+		set desc = "Sets the expression replacement for searching and replacing"
+		set category = "Local"
+
+		if (!istype(usr, /mob/living))
+			return
+		if (usr.stat)
+			return
+		if (!mechanics.allowChange(usr))
+			boutput(usr, "<span style=\"color:red\">[MECHFAILSTRING]</span>")
+			return
+
+		var/inp = input(usr,"Please enter Expression Replacement:","Expression setting", expressionrepl) as text
+		if(length(inp))
+			inp = sanitize(html_encode(inp))
+			expressionrepl = inp
+			expression = ("[expressionpatt]/[expressionrepl]/[expressionflag]")
+			boutput(usr, "Expression Replacement set to [inp], Current Expression: [sanitize(html_encode(expression))]")
+		return
+
+	verb/setregexr3()
+		set src in view(1)
+		set name = "\[Set Flags\]"
+		set desc = "Sets the expression flags for searching and replacing"
+		set category = "Local"
+
+		if (!istype(usr, /mob/living))
+			return
+		if (usr.stat)
+			return
+		if (!mechanics.allowChange(usr))
+			boutput(usr, "<span style=\"color:red\">[MECHFAILSTRING]</span>")
+			return
+
+		var/inp = input(usr,"Please enter Expression Flags:","Expression setting", expressionflag) as text
+		if(length(inp))
+			inp = sanitize(html_encode(inp))
+			expressionflag = inp
+			expression = ("[expressionpatt]/[expressionrepl]/[expressionflag]")
+			boutput(usr, "Expression Flags set to [inp], Current Expression: [sanitize(html_encode(expression))]")
+		return
+
 
 	updateIcon()
 		icon_state = "[under_floor ? "u":""]comp_regrep"

@@ -1075,8 +1075,8 @@ var/list/mechanics_telepads = new/list()
 			//if(!R)
 			//	boutput(usr, "<span style=\"color:red\">Bad regex</span>")
 			//else
-			inp = sanitize(html_encode(inp))
 			expressionpatt = inp
+			inp = sanitize(html_encode(inp))
 			expression = ("[expressionpatt]/[expressionrepl]/[expressionflag]")
 			boutput(usr, "Expression Pattern set to [inp], Current Expression: [sanitize(html_encode(expression))]")
 		return
@@ -1097,8 +1097,8 @@ var/list/mechanics_telepads = new/list()
 
 		var/inp = input(usr,"Please enter Expression Replacement:","Expression setting", expressionrepl) as text
 		if(inp != null)
-			inp = sanitize(html_encode(inp))
 			expressionrepl = inp
+			inp = sanitize(html_encode(inp))
 			expression = ("[expressionpatt]/[expressionrepl]/[expressionflag]")
 			boutput(usr, "Expression Replacement set to [inp], Current Expression: [sanitize(html_encode(expression))]")
 		return
@@ -1119,8 +1119,8 @@ var/list/mechanics_telepads = new/list()
 
 		var/inp = input(usr,"Please enter Expression Flags:","Expression setting", expressionflag) as text
 		if(inp != null)
-			inp = sanitize(html_encode(inp))
 			expressionflag = inp
+			inp = sanitize(html_encode(inp))
 			expression = ("[expressionpatt]/[expressionrepl]/[expressionflag]")
 			boutput(usr, "Expression Flags set to [inp], Current Expression: [sanitize(html_encode(expression))]")
 		return
@@ -1136,6 +1136,8 @@ var/list/mechanics_telepads = new/list()
 	icon_state = "comp_regfind"
 	var/replacesignal = 0
 	var/expression = "/\[a-Z\]*/"
+	var/expressionpatt
+	var/expressionflag
 
 	get_desc()
 		. += {"<br><span style=\"color:blue\">Current Expression: [sanitize(html_encode(expression))]<br>
@@ -1148,7 +1150,7 @@ var/list/mechanics_telepads = new/list()
 
 	proc/checkstr(var/datum/mechanicsMessage/input)
 		if(level == 2 || !length(expression)) return
-		var/regex/R = new(expression)
+		var/regex/R = new(expressionpatt, expressionflag)
 
 		if(!R) return
 
@@ -1156,14 +1158,14 @@ var/list/mechanics_telepads = new/list()
 			if(replacesignal)
 				input.signal = mechanics.outputSignal
 			else
-				input.signal = copytext(input.signal, R.match, R.index)
+				input.signal = R.match
 			mechanics.fireOutgoing(input)
 
 		return
 
-	verb/setregexf()
+	verb/setregexf1()
 		set src in view(1)
-		set name = "\[Set Regular Expression\]"
+		set name = "\[Set Expression Pattern\]"
 		set desc = "Sets the expression that the component will look for."
 		set category = "Local"
 
@@ -1175,16 +1177,36 @@ var/list/mechanics_telepads = new/list()
 			boutput(usr, "<span style=\"color:red\">[MECHFAILSTRING]</span>")
 			return
 
-		var/inp = input(usr,"Please enter Expression:","Expression setting", expression) as text
-		if(length(inp))
-			var/regex/R = new(inp)
-			if(!R)
-				boutput(usr, "<span style=\"color:red\">Bad regex</span>")
-			else
-				expression = inp
-				inp = sanitize(html_encode(inp))
-				boutput(usr, "Expression set to [inp]")
+		var/inp = input(usr,"Please enter Expression Pattern:","Expression setting", expressionpatt) as text
+		if(inp != null)
+			expressionpatt = inp
+			expression = ("[expressionpatt]/[expressionflag]")
+			inp = sanitize(html_encode(inp))
+			boutput(usr, "Expression Pattern set to [inp], Current Expression: [sanitize(html_encode(expression))]")
 		return
+
+	verb/setregexf2()
+		set src in view(1)
+		set name = "\[Set Expression Flags\]"
+		set desc = "Sets the expression that the component will look for."
+		set category = "Local"
+
+		if (!istype(usr, /mob/living))
+			return
+		if (usr.stat)
+			return
+		if (!mechanics.allowChange(usr))
+			boutput(usr, "<span style=\"color:red\">[MECHFAILSTRING]</span>")
+			return
+
+		var/inp = input(usr,"Please enter Expression Flags:","Expression setting", expressionflag) as text
+		if(inp != null)
+			expressionflag = inp
+			expression = ("[expressionpatt]/[expressionflag]")
+			inp = sanitize(html_encode(inp))
+			boutput(usr, "Expression Flags set to [inp], Current Expression: [sanitize(html_encode(expression))]")
+		return
+
 
 	verb/toggleregfrep()
 		set src in view(1)
